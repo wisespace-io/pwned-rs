@@ -1,0 +1,28 @@
+[package]
+name = "pwned"
+version = "0.1.0"
+license = "MIT OR Apache-2.0"
+authors = ["Flavio Oliveira <flavio@wisespace.io>"]
+
+description = "Simple Have I Been Pwned checker"
+keywords = ["haveibeenpwned", "password", "leaks"]
+documentation = "https://docs.rs/crate/pwned/"
+repository = "https://github.com/wisespace-io/pwned-rs"
+readme = "README.md"
+
+[badges]
+travis-ci = { repository = "wisespace-io/pwned-rs" }
+
+[lib]
+name = "pwned"
+path = "src/lib.rs"
+
+[dependencies]
+clippy = { version = "0.0.186", optional = true }
+serde = "1.0"
+serde_json = "1.0"
+serde_derive = "1.0"
+error-chain = "0.11"
+derive_builder = "0.5"
+reqwest = "0.8"
+sha1 = "0.6"
