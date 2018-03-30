@@ -37,8 +37,6 @@ fn main() {
 
 ### Check all breaches for an account
 
-It uses the range API, so only the first 5 characters of a SHA1 hashed password are sent to Have I been pwned?
-
 ```rust
 extern crate pwned;
 
