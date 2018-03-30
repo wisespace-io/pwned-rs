@@ -13,7 +13,7 @@ Add this to your Cargo.toml
 
 ```toml
 [dependencies]
-binance = { git = "https://github.com/wisespace-io/pwned-rs.git" }
+pwned = { git = "https://github.com/wisespace-io/pwned-rs.git" }
 ```
 
 ### Check a password against the API and see the number of occurrences
@@ -31,6 +31,29 @@ fn main() {
     match pwned.check_password("password") {
         Ok(pwd) => println!("Pwned? {} - Occurrences {}", pwd.found, pwd.count),
         Err(e) => println!("Error: {}", e),
+    }
+}
+```
+
+### Check all breaches for an account
+
+It uses the range API, so only the first 5 characters of a SHA1 hashed password are sent to Have I been pwned?
+
+```rust
+extern crate pwned;
+
+use pwned::api::*;
+
+fn main() {
+    let pwned = PwnedBuilder::default().build().unwrap();
+
+    match pwned.check_email("test@example.com") {
+        Ok(answer) => {
+            for breach in answer {
+                println!("Service {:?}, breach date {:?}", breach.name, breach.breach_date);
+            }
+        },
+        Err(e) => println!("Message: {}", e),
     }
 }
 ```

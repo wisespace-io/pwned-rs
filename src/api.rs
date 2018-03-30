@@ -1,17 +1,17 @@
+
 use std::io::{Read, BufRead, Cursor};
 use reqwest;
+use reqwest::{Response, StatusCode};
 use reqwest::header::{Headers, UserAgent};
 use sha1::{Sha1};
+use serde_json::{from_str};
+
 use errors::*;
+use model::*;
 
-static API_URL : &'static str = "https://api.pwnedpasswords.com/range/";
+static MAIN_API_URL : &'static str = "https://haveibeenpwned.com/api/";
+static RANGE_API_URL : &'static str = "https://api.pwnedpasswords.com/range/";
 static DEFAULT_USER_AGENT : &'static str = "github.com/wisespace-io/pwned-rs";
-
-#[derive(Debug)]
-pub struct Password {
-    pub found: bool,
-    pub count: i32,
-}
 
 #[derive(Builder, Debug, PartialEq)]
 pub struct Pwned {
@@ -39,7 +39,7 @@ impl Pwned {
 
         let hash = sha1.digest().to_string();
         let (prefix, suffix) = hash.split_at(5);
-        let url = format!("{}{}", API_URL, prefix);
+        let url = format!("{}{}", RANGE_API_URL, prefix);
 
         match self.get(url) {
             Ok(answer) => {
@@ -48,10 +48,24 @@ impl Pwned {
                     let value = line.unwrap().to_lowercase();
                     if value.contains(suffix) {
                         let v: Vec<&str> = value.split(":").collect();
-                        return Ok(Password {found: true, count: v[1].parse::<i32>().unwrap()});
+                        return Ok(Password {found: true, count: v[1].parse::<u64>().unwrap()});
                     }
                 }
                 Ok(Password {found: false, count: 0})
+            },
+            Err(e) => Err(e),
+        }
+    }
+
+    pub fn check_email<E>(&self, email: E) -> Result<(Vec<Breach>)>
+        where E: Into<String>
+    {
+        let url = format!("{}breachedaccount/{}", MAIN_API_URL, email.into());
+
+        match self.get(url) {
+            Ok(answer) => {
+                let breach: Vec<Breach> = from_str(answer.as_str()).unwrap();
+                Ok(breach)
             },
             Err(e) => Err(e),
         }
@@ -61,16 +75,30 @@ impl Pwned {
         let mut custon_headers = Headers::new();
 
         custon_headers.set(UserAgent::new(self.user_agent.clone()));
+        custon_headers.set_raw("api-version", "2");
 
         let client = reqwest::Client::new();
-        let mut response = client
+        let response = client
             .get(url.as_str())
             .headers(custon_headers)
             .send()?;
 
-        let mut data = String::new();
-        try!(response.read_to_string(&mut data));
+        self.handler(response)
+    }
 
-        Ok(data)
+    fn handler(&self, mut response: Response) -> Result<(String)> {
+        match response.status() {
+            StatusCode::Ok => {
+                let mut body = String::new();
+                response.read_to_string(&mut body)?;
+                Ok(body)
+            },
+            StatusCode::NotFound => {
+                bail!(format!("The account could not be found and has therefore not been pwned"));
+            }            
+            status => {
+                bail!(format!("{:?}", status));
+            }
+        }
     }
 }

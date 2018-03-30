@@ -1,11 +1,11 @@
 [package]
 name = "pwned"
-version = "0.1.0"
+version = "0.1.1"
 license = "MIT OR Apache-2.0"
 authors = ["Flavio Oliveira <flavio@wisespace.io>"]
 
 description = "Simple Have I Been Pwned checker"
-keywords = ["haveibeenpwned", "password", "leaks"]
+keywords = ["haveibeenpwned", "password", "breaches"]
 documentation = "https://docs.rs/crate/pwned/"
 repository = "https://github.com/wisespace-io/pwned-rs"
 readme = "README.md"
