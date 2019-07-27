@@ -27,6 +27,8 @@ use pwned::api::*;
 
 fn main() {
     let pwned = PwnedBuilder::default().build().unwrap();
+    // If want to use a different user agent
+    // let pwned = PwnedBuilder::default().user_agent("user_agent_name").build().unwrap();
 
     match pwned.check_password("password") {
         Ok(pwd) => println!("Pwned? {} - Occurrences {}", pwd.found, pwd.count),

@@ -2,7 +2,7 @@
 use std::io::{Read, BufRead, Cursor};
 use reqwest;
 use reqwest::{Response, StatusCode};
-use reqwest::header::{Headers, UserAgent};
+use reqwest::header::{HeaderMap, HeaderName, HeaderValue, USER_AGENT};
 use sha1::{Sha1};
 use serde_json::{from_str};
 
@@ -11,7 +11,7 @@ use model::*;
 
 static MAIN_API_URL : &'static str = "https://haveibeenpwned.com/api/";
 static RANGE_API_URL : &'static str = "https://api.pwnedpasswords.com/range/";
-static DEFAULT_USER_AGENT : &'static str = "github.com/wisespace-io/pwned-rs";
+static DEFAULT_USER_AGENT : &'static str = "wisespace-io";
 
 #[derive(Builder, Debug, PartialEq)]
 pub struct Pwned {
@@ -72,10 +72,10 @@ impl Pwned {
     }
 
     fn get(&self, url: String) -> Result<String> {
-        let mut custon_headers = Headers::new();
+        let mut custon_headers = HeaderMap::new();
 
-        custon_headers.set(UserAgent::new(self.user_agent.clone()));
-        custon_headers.set_raw("api-version", "2");
+        custon_headers.insert(USER_AGENT, HeaderValue::from_str(self.user_agent.as_str())?);
+        custon_headers.insert(HeaderName::from_static("api-version"), HeaderValue::from_static("2"));
 
         let client = reqwest::Client::new();
         let response = client
@@ -88,12 +88,12 @@ impl Pwned {
 
     fn handler(&self, mut response: Response) -> Result<(String)> {
         match response.status() {
-            StatusCode::Ok => {
+            StatusCode::OK => {
                 let mut body = String::new();
                 response.read_to_string(&mut body)?;
                 Ok(body)
             },
-            StatusCode::NotFound => {
+            StatusCode::NOT_FOUND => {
                 bail!(format!("The account could not be found and has therefore not been pwned"));
             }            
             status => {

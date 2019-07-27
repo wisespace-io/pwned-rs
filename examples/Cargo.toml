@@ -1,7 +1,0 @@
-[package]
-name = "pwned-app"
-version = "0.1.0"
-authors = ["Flavio Oliveira <flavio@wisespace.io>"]
-
-[dependencies]
-pwned = { path = "../" }
