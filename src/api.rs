@@ -2,21 +2,25 @@
 use std::io::{Read, BufRead, Cursor};
 use reqwest;
 use reqwest::{Response, StatusCode};
-use reqwest::header::{HeaderMap, HeaderName, HeaderValue, USER_AGENT};
+use reqwest::header::{HeaderMap, HeaderValue, USER_AGENT};
 use sha1::{Sha1};
 use serde_json::{from_str};
 
 use errors::*;
 use model::*;
 
-static MAIN_API_URL : &'static str = "https://haveibeenpwned.com/api/";
+static MAIN_API_URL : &'static str = "https://haveibeenpwned.com/api/v3/";
 static RANGE_API_URL : &'static str = "https://api.pwnedpasswords.com/range/";
 static DEFAULT_USER_AGENT : &'static str = "wisespace-io";
+static API_KEY: &'static str = "hibp-api-key";
 
 #[derive(Builder, Debug, PartialEq)]
 pub struct Pwned {
     #[builder(setter(into), default = "self.default_user_agent()")]
-    pub user_agent: String
+    pub user_agent: String,
+
+    #[builder(setter(into))]
+    pub api_key: String
 }
 
 impl PwnedBuilder {
@@ -30,7 +34,7 @@ impl PwnedBuilder {
 }
 
 impl Pwned {
-    pub fn check_password<P>(&self, password: P) -> Result<(Password)>
+    pub fn check_password<P>(&self, password: P) -> Result<Password>
         where P: Into<String>
     {
         let mut sha1 = Sha1::new();
@@ -57,11 +61,10 @@ impl Pwned {
         }
     }
 
-    pub fn check_email<E>(&self, email: E) -> Result<(Vec<Breach>)>
+    pub fn check_email<E>(&self, email: E) -> Result<Vec<Breach>>
         where E: Into<String>
     {
-        let url = format!("{}breachedaccount/{}", MAIN_API_URL, email.into());
-
+        let url = format!("{}breachedaccount/{}?truncateResponse=false", MAIN_API_URL, email.into());
         match self.get(url) {
             Ok(answer) => {
                 let breach: Vec<Breach> = from_str(answer.as_str()).unwrap();
@@ -72,21 +75,21 @@ impl Pwned {
     }
 
     fn get(&self, url: String) -> Result<String> {
-        let mut custon_headers = HeaderMap::new();
+        let mut custom_headers = HeaderMap::new();
 
-        custon_headers.insert(USER_AGENT, HeaderValue::from_str(self.user_agent.as_str())?);
-        custon_headers.insert(HeaderName::from_static("api-version"), HeaderValue::from_static("2"));
+        custom_headers.insert(USER_AGENT, HeaderValue::from_str(self.user_agent.as_str())?);
+        custom_headers.insert(API_KEY, HeaderValue::from_str(self.api_key.as_str())?);
 
         let client = reqwest::Client::new();
         let response = client
             .get(url.as_str())
-            .headers(custon_headers)
+            .headers(custom_headers)
             .send()?;
 
         self.handler(response)
     }
 
-    fn handler(&self, mut response: Response) -> Result<(String)> {
+    fn handler(&self, mut response: Response) -> Result<String> {
         match response.status() {
             StatusCode::OK => {
                 let mut body = String::new();
