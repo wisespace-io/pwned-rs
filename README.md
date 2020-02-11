@@ -26,9 +26,9 @@ extern crate pwned;
 use pwned::api::*;
 
 fn main() {
-    let pwned = PwnedBuilder::default().build().unwrap();
-    // If want to use a different user agent
-    // let pwned = PwnedBuilder::default().user_agent("user_agent_name").build().unwrap();
+    let pwned = PwnedBuilder::default()
+        .api_key(std::env::var("HIBP_API_KEY").expect("You need to give your HIBP API key as the HIBP_API_KEY environment variable"))
+        .build().unwrap();
 
     match pwned.check_password("password") {
         Ok(pwd) => println!("Pwned? {} - Occurrences {}", pwd.found, pwd.count),
@@ -45,15 +45,20 @@ extern crate pwned;
 use pwned::api::*;
 
 fn main() {
-    let pwned = PwnedBuilder::default().build().unwrap();
+    
+    let pwned = PwnedBuilder::default()
+        .user_agent("my_user_agent")
+        .api_key(std::env::var("HIBP_API_KEY").expect("You need to give your HIBP API key as the HIBP_API_KEY environment variable"))
+        .build().unwrap();
 
-    match pwned.check_email("test@example.com") {
+    match pwned.check_email("test@wisespace.io") {
         Ok(answer) => {
             for breach in answer {
-                println!("Service {:?}, breach date {:?}", breach.name, breach.breach_date);
+                println!("Service {:?}, breach date {:?} Domain: {:?}", breach.name, breach.breach_date, breach.domain);
             }
         },
         Err(e) => println!("Message: {}", e),
     }
+
 }
 ```
