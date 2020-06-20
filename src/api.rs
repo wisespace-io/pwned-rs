@@ -19,6 +19,13 @@ pub struct Pwned {
     #[builder(setter(into), default = "self.default_user_agent()")]
     pub user_agent: String,
 
+    /// Whether the Pwned Passwords API should randomly pad responses it returns.
+    /// Padding closes a small security gap; see [the original blog post] for
+    /// more info.
+    ///
+    /// [the original blog post]: https://www.troyhunt.com/enhancing-pwned-passwords-privacy-with-padding/
+    pub pad_password_responses: bool,
+
     #[builder(setter(into))]
     pub api_key: String
 }
@@ -52,7 +59,9 @@ impl Pwned {
                     let value = line.unwrap().to_lowercase();
                     if value.contains(suffix) {
                         let v: Vec<&str> = value.split(":").collect();
-                        return Ok(Password {found: true, count: v[1].parse::<u64>().unwrap()});
+                        let count = v[1].parse::<u64>().unwrap();
+                        let found = count > 0;
+                        return Ok(Password {found, count});
                     }
                 }
                 Ok(Password {found: false, count: 0})
@@ -79,6 +88,9 @@ impl Pwned {
 
         custom_headers.insert(USER_AGENT, HeaderValue::from_str(self.user_agent.as_str())?);
         custom_headers.insert(API_KEY, HeaderValue::from_str(self.api_key.as_str())?);
+        if self.pad_password_responses && url.starts_with(RANGE_API_URL) {
+            custom_headers.insert("Add-Padding", HeaderValue::from_str("true")?);
+        }
 
         let client = reqwest::Client::new();
         let response = client
@@ -98,7 +110,7 @@ impl Pwned {
             },
             StatusCode::NOT_FOUND => {
                 bail!(format!("The account could not be found and has therefore not been pwned"));
-            }            
+            }
             status => {
                 bail!(format!("{:?}", status));
             }
