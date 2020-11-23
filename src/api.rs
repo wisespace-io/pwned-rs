@@ -5,9 +5,10 @@ use reqwest::{Response, StatusCode};
 use reqwest::header::{HeaderMap, HeaderValue, USER_AGENT};
 use sha1::{Sha1};
 use serde_json::{from_str};
+use derive_builder::Builder;
 
-use errors::*;
-use model::*;
+use crate::errors::*;
+use crate::model::*;
 
 static MAIN_API_URL : &'static str = "https://haveibeenpwned.com/api/v3/";
 static RANGE_API_URL : &'static str = "https://api.pwnedpasswords.com/range/";
@@ -109,10 +110,10 @@ impl Pwned {
                 Ok(body)
             },
             StatusCode::NOT_FOUND => {
-                bail!(format!("The account could not be found and has therefore not been pwned"));
+                error_chain::bail!(format!("The account could not be found and has therefore not been pwned"));
             }
             status => {
-                bail!(format!("{:?}", status));
+                error_chain::bail!(format!("{:?}", status));
             }
         }
     }

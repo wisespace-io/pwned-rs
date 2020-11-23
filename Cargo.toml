@@ -3,6 +3,7 @@ name = "pwned"
 version = "0.2.1"
 license = "MIT OR Apache-2.0"
 authors = ["Flavio Oliveira <flavio@wisespace.io>"]
+edition = "2018"
 
 description = "Simple Have I Been Pwned checker"
 keywords = ["haveibeenpwned", "password", "breaches"]

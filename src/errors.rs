@@ -1,7 +1,7 @@
 use std;
 use reqwest;
 
-error_chain! {
+error_chain::error_chain! {
 
     foreign_links {
         ReqError(reqwest::Error);

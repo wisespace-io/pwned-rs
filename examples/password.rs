@@ -1,5 +1,3 @@
-extern crate pwned;
-
 use pwned::api::*;
 
 fn main() {
