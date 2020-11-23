@@ -21,16 +21,14 @@ pwned = { git = "https://github.com/wisespace-io/pwned-rs.git" }
 It uses the range API, so only the first 5 characters of a SHA1 hashed password are sent to Have I been pwned?
 
 ```rust
-extern crate pwned;
-
 use pwned::api::*;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let pwned = PwnedBuilder::default()
-        .api_key(std::env::var("HIBP_API_KEY").expect("You need to give your HIBP API key as the HIBP_API_KEY environment variable"))
         .build().unwrap();
 
-    match pwned.check_password("password") {
+    match pwned.check_password("password").await {
         Ok(pwd) => println!("Pwned? {} - Occurrences {}", pwd.found, pwd.count),
         Err(e) => println!("Error: {}", e),
     }
@@ -40,18 +38,16 @@ fn main() {
 ### Check all breaches for an account
 
 ```rust
-extern crate pwned;
-
 use pwned::api::*;
-
-fn main() {
+#[tokio::main]
+async fn main() {
     
     let pwned = PwnedBuilder::default()
         .user_agent("my_user_agent")
         .api_key(std::env::var("HIBP_API_KEY").expect("You need to give your HIBP API key as the HIBP_API_KEY environment variable"))
         .build().unwrap();
 
-    match pwned.check_email("test@wisespace.io") {
+    match pwned.check_email("test@wisespace.io").await {
         Ok(answer) => {
             for breach in answer {
                 println!("Service {:?}, breach date {:?} Domain: {:?}", breach.name, breach.breach_date, breach.domain);

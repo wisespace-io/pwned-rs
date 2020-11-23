@@ -1,3 +1,5 @@
+use serde_derive::{Serialize, Deserialize};
+
 #[derive(Debug)]
 pub struct Password {
     pub found: bool,
