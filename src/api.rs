@@ -7,8 +7,7 @@ use sha1::{Sha1};
 use serde_json::{from_str};
 use derive_builder::Builder;
 
-use crate::errors::Result;
-use crate::model::*;
+use crate::{errors::Result, model::{Breach, Password}};
 
 static MAIN_API_URL : &'static str = "https://haveibeenpwned.com/api/v3/";
 static RANGE_API_URL : &'static str = "https://api.pwnedpasswords.com/range/";
