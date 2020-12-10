@@ -7,8 +7,7 @@ use sha1::{Sha1};
 use serde_json::{from_str};
 use derive_builder::Builder;
 
-use crate::errors::*;
-use crate::model::*;
+use crate::{errors::Result, model::{Breach, Password}};
 
 static MAIN_API_URL : &'static str = "https://haveibeenpwned.com/api/v3/";
 static RANGE_API_URL : &'static str = "https://api.pwnedpasswords.com/range/";
@@ -111,10 +110,14 @@ impl Pwned {
                 Ok(response.text().await?)
             },
             StatusCode::NOT_FOUND => {
-                error_chain::bail!(format!("The account could not be found and has therefore not been pwned"));
+                Err(std::io::Error::new(
+                    std::io::ErrorKind::NotFound,
+                    "The account could not be found and has therefore not been pwned").into())
             }
             status => {
-                error_chain::bail!(format!("{:?}", status));
+                Err(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    format!("{:?}", status)).into())
             }
         }
     }
