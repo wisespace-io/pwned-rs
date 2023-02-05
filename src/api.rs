@@ -3,7 +3,7 @@ use std::io::{BufRead, Cursor};
 use reqwest;
 use reqwest::{Response, StatusCode};
 use reqwest::header::{HeaderMap, HeaderValue, USER_AGENT};
-use sha1::{Sha1};
+use sha1_smol::{Sha1};
 use serde_json::{from_str};
 use derive_builder::Builder;
 
